@@ -12,6 +12,7 @@ use Src\Application\Create\OrderCreator;
 use Src\Domain\Order;
 use Src\Domain\OrderRepository;
 use Tests\Unit\Order\Domain\OrderMother;
+use Tests\Unit\Order\Infrastructure\InMemoryOrderRepository;
 
 final class OrderCreatorTest extends TestCase
 {
@@ -21,35 +22,9 @@ final class OrderCreatorTest extends TestCase
     public function it_should_create_a_valid_order_and_return_null(): void
     {
         $request = OrderCreatorRequestMother::random();
-        $order = OrderMother::fromRequest($request);
-        $this->shouldCreate($order);
-        $creator = new OrderCreator($this->repository());
+        $creator = new OrderCreator(new InMemoryOrderRepository());
         $response = ($creator)($request);
 
         self::assertNull($response);
-    }
-
-    private function shouldCreate(Order $order): void
-    {
-        $this->repository()
-            ->shouldReceive('save')
-            ->with($this->similarTo($order))
-            ->once()
-            ->andReturnNull();
-    }
-
-    protected function repository()
-    {
-        return $this->repository = $this->repository ?? $this->mock(OrderRepository::class);
-    }
-
-    protected function mock(string $className): MockInterface
-    {
-        return Mockery::mock($className);
-    }
-
-    public static function similarTo($value, $delta = 0.0): MedineMatcherIsSimilar
-    {
-        return new MedineMatcherIsSimilar($value, $delta);
     }
 }
